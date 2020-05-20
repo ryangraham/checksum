@@ -40,7 +40,7 @@ bool luhn_check(const std::string& pan) {
   auto to_int = [](char c) {
     return c - 48;
   };  // ^ idk why this worked and stoul didnt but w/e
-  auto const digits = pan | views::transform(to_int) | views::reverse;
+  auto digits = pan | views::transform(to_int) | views::reverse;
 
   auto odd_digits = digits | views::stride(2);
   auto odd_digit_sum = accumulate(odd_digits, 0);
