@@ -49,6 +49,11 @@ bool luhn_check(const std::string& pan) {
   auto multiply_and_maybe_sum = [](auto n) {
     return (n != 9) ? (2 * n) % 9 : 9;
   };  // ^ insanity
+      // irb(main):001:0> 2 * 8
+      // => 16
+      // irb(main):002:0> (2 * 8) % 9
+      // => 7
+      // 1 + 6 = 7
   auto partially_summed_products =
       even_digits | views::transform(multiply_and_maybe_sum);
   auto even_digit_sum = accumulate(partially_summed_products, 0);
