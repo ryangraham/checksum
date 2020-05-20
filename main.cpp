@@ -4,22 +4,20 @@
 
 using namespace ranges;
 
-unsigned int to_int(char c) { return c - 48; }
+// unsigned int to_int(char c) { return c - 48; }
 
 bool rtn_checksum(const std::string& routing_number) {
   std::vector<int> const multipliers{3, 7, 1, 3, 7, 1, 3, 7, 1};
 
-  auto const routing_digits = routing_number | views::transform([](char c) {
-                                return std::stoul(&c, nullptr, 10);
-                              });
+  auto to_int = [](char c) { return std::stoul(&c, nullptr, 10); };
+  auto const routing_digits = routing_number | views::transform(to_int);
 
-  auto multiplied = views::zip(routing_digits, multipliers) |
-                    views::transform([](auto&& values) {
-                      auto const& [a, b] = values;
-                      return a * b;
-                    });
-
-  auto sum = accumulate(multiplied, 0);
+  auto multiply = [](auto&& values) {
+    auto const& [a, b] = values;
+    return a * b;
+  };
+  auto sum = accumulate(
+      views::zip(routing_digits, multipliers) | views::transform(multiply), 0);
 
   return sum % 10 == 0;
 }
