@@ -19,46 +19,22 @@ bool rtn_checksum(const std::string& routing_number) {
   return sum % 10 == 0;
 }
 
-/*
-  Reverse the digits:
-    61789372994
-  Sum the odd digits:
-    6 + 7 + 9 + 7 + 9 + 4 = 42 = s1
-  The even digits:
-      1,  8,  3,  2,  9
-    Two times each even digit:
-      2, 16,  6,  4, 18
-    Sum the digits of each multiplication:
-      2,  7,  6,  4,  9
-    Sum the last:
-      2 + 7 + 6 + 4 + 9 = 28 = s2
-
-  s1 + s2 = 70 which ends in zero which means that 49927398716 passes the Luhn
-  test
- */
 bool luhn_check(const std::string& pan) {
-  auto to_int = [](char c) {
-    return c - 48;
-  };  // ^ idk why this worked and stoul didnt but w/e
-  auto digits = pan | views::transform(to_int) | views::reverse;
+  auto to_int = [](char c) { return c - 48; };
 
-  auto odd_digits = digits | views::stride(2);
-  auto odd_digit_sum = accumulate(odd_digits, 0);
+  auto sum_digits = [](int n) { return n / 10 + n % 10; };
+  auto do_digits = [&sum_digits](auto&& values) {
+    auto const& [index, digit] = values;
+    return (index % 2 == 0) ? digit : sum_digits(digit * 2);
+  };
 
-  auto even_digits = digits | views::drop(1) | views::stride(2);
-  auto multiply_and_maybe_sum = [](auto n) {
-    return (n != 9) ? (2 * n) % 9 : 9;
-  };  // ^ insanity
-      // irb(main):001:0> 2 * 8
-      // => 16
-      // irb(main):002:0> (2 * 8) % 9
-      // => 7
-      // 1 + 6 = 7
-  auto partially_summed_products =
-      even_digits | views::transform(multiply_and_maybe_sum);
-  auto even_digit_sum = accumulate(partially_summed_products, 0);
+  auto rng = pan 
+              | views::transform(to_int)
+              | views::reverse
+              | views::enumerate
+              | views::transform(do_digits);
 
-  auto sum = odd_digit_sum + even_digit_sum;
+  auto sum = accumulate(rng, 0);
 
   return sum % 10 == 0;
 }
